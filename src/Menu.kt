@@ -1,39 +1,71 @@
-import com.sun.tools.javac.Main
 import model.*
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
+import java.util.*
 
-var receta:MutableList<Fruta> = ArrayList()
+var nombreReceta:String = ""
+var recetas:MutableList<Receta> = mutableListOf()
+var ingredienteList: MutableList<Ingrediente> = mutableListOf()
 
 fun main(args:Array<String>){
-
+    menuPrincipal()
+}
+fun menuPrincipal(){
     val options: String = """
         :: Bienvenido a Recipe Maker ::
         
         Selecciona la opcion deseada
+        
         1. Hacer una receta
         2. Ver mis recetas
         3. Salir
+        
     """.trimIndent()
     stopLoop@ do {
         println(options)
         val response: String? = readLine()
         repit@ when( response?.toInt()){
             1 -> {
-                    repicesMaker()
-                    break@stopLoop
-                }
+                repicesMaker()
+                break@stopLoop
+            }
             2 -> {
-                    viewRepices()
-                    break@stopLoop
-                }
-            3 -> println("Regresa Pronto")
-            else -> println("Debe ingresar una de las opciones")
-
+                viewRepices()
+                break@stopLoop
+            }
+            3 -> {
+                println("Regresa Pronto")
+                break@stopLoop
+            }
+            else -> {
+                println("Debe ingresar una de las opciones")
+                continue@stopLoop
+            }
         }
     }while (response?.toInt() != 3)
 }
-
 fun repicesMaker(){
+    if (recetas.size > 0){
+        println("Ingrese el nombre de la receta nueva")
+        nombreReceta = readLine().toString()
+        for (receta in recetas){
+            if (receta.nombreReceta.toLowerCase() === nombreReceta.toLowerCase()){
+                println("La receta con el nombre ya existe. Ingrese otro nombre")
+                optionToRepiceMaker()
+            }else{
+                optionToRepiceMaker()
+            }
+        }
+    }else{
+        if (nombreReceta === "") {
+            println("Ingrese el nombre de la receta")
+            nombreReceta = readLine().toString()
+            optionToRepiceMaker()
+        }else{
+            optionToRepiceMaker()
+        }
+    }
+
+}
+fun optionToRepiceMaker(){
     stopCategoria@do {
         val options: String = """
         Hacer receta
@@ -46,7 +78,7 @@ fun repicesMaker(){
         6. Cereal
         7. Huevos
         8. Aceites
-        0. Salir
+        0. Terminar Cereta
     """.trimIndent()
         println(options)
         val selected:Int? = readLine()?.toInt()
@@ -83,72 +115,59 @@ fun repicesMaker(){
                 addAceite()
                 break@stopCategoria
             }
-            0 -> println("Regresa Pronto")
+            0 -> {
+                recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+                menuPrincipal()
+            }
             else -> println("debe seleccionar una de las opciones")
         }
     }while (selected != 0)
 }
 fun viewRepices(){
-    val title: String = "Ver mis recetas"
-    println(title)
+    do {
+        println("Mis recetas")
+        for ((index, item) in recetas.withIndex()){
+            println("${index+1}. ${item.nombreReceta}")
+        }
+        println("0. Volver al Menu Principal")
+        val selected = readLine()?.toInt()
+        println("tamanio recetas : ${recetas.size}")
+        if (selected in 1..recetas.size){
+            printReceta(selected!!)
+        }else if (selected == 0){
+            menuPrincipal()
+        }else{
+            println("debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun printReceta(selected: Int){
+    println("======   ${recetas.get(selected-1).nombreReceta}   ======")
+    println("Nro. \t  Nombre Ingrediente \t Cantidad \t Unidad de Medida")
+    for ((index, item) in recetas[selected-1].listIngrediente.withIndex()){
+        println("${index+1} \t\t ${item.nombre} \t\t ${item.cantidad} \t\t ${item.unidadMedida}\n")
+    }
 }
 fun addAgua(){
-    println("Introduce una cantidad en Litros")
-    val cantidad:Int? = readLine()?.toInt()
-    val agua = Agua(cantidad, "Agua")
-    println("Cantidad de Agua que se agredo: $cantidad")
-}
-
-fun addLeche(){
-    println("Introduce una cantidad en Litros")
-    val cantidad:Int? = readLine()?.toInt()
-    val leche = Leche(cantidad, "Leche")
-    println("Cantidad de Leche que se agredo: $cantidad")
-}
-fun addCarne(){
-    println("Introduce una cantidad en kilos")
-    val cantidad:Int? = readLine()?.toInt()
-    val carne = Carne(cantidad, "Carne")
-    println("Cantidad de Carne que se agredo: $cantidad")
-}
-fun addVerdura(){
-    val listVerduras: Array<String> = arrayOf("Tomate", "Brocoli", "Rabano", "Zanahoria","Vaina", "Acelga")
-
-    stopVerdura@ do {
-        for ((index , item) in listVerduras.withIndex()){
-            println("${index+1}. $item")
-        }
-        println("0. Salir")
+    stopAgua@ do {
+        val agua = Agua(0,"")
+        println("0. Terminar receta")
         val selected:Int? = readLine()?.toInt()
         when(selected){
             1->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                
-                break@stopVerdura
+                addAguaToIngredientes(agua, selected)
+                optionToRepiceMaker()
+                break@stopAgua
             }
             2->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
+                addAguaToIngredientes(agua,selected)
+                optionToRepiceMaker()
+                break@stopAgua
             }
             3->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
-            }
-            4->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
-            }
-            5->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
-            }
-            6->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
-            }
-            6->{
-                val verdura = Verdura(selected,listVerduras.get(selected-1))
-                break@stopVerdura
+                addAguaToIngredientes(agua,selected)
+                optionToRepiceMaker()
+                break@stopAgua
             }
             0-> println("Regrese pronto")
             else -> println("Debe seleccionar un numero de las opciones")
@@ -156,92 +175,199 @@ fun addVerdura(){
         }
     }while (selected != 0)
 }
-fun addFruta(){
-    val list: Array<String> = arrayOf("Fresa", "Platano", "Uvas", "Manzana","Naranja", "Pera", "Cereza")
-
-    stopFruta@ do {
-        for ((index , item) in list.withIndex()){
-            println("${index+1}. $item")
-        }
-        println("0. Salir")
-        val selected:Int? = readLine()?.toInt()
-        when(selected){
-            1->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                receta.add(fruta)
-                break@stopFruta
-            }
-            2->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            3->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            4->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            5->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            6->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            6->{
-                val fruta = Fruta(selected,list.get(selected-1))
-                break@stopFruta
-            }
-            0-> println("Regrese pronto")
-            else -> println("Debe seleccionar un numero de las opciones")
-
-        }
-    }while (selected != 0)
-}
-fun addCereal(){
-    val listCereal: Array<String> = arrayOf("Avena", "Trigo", "Arroz", "Maiz")
-
-    stopCereal@ do {
-        println("0. Salir")
-        for ((index , item) in listCereal.withIndex()){
-            println("${index+1}. $item")
-        }
-        val selected:Int? = readLine()?.toInt()
-        when(selected){
-            1->{
-                val cereal = Cereal(selected,listCereal.get(selected-1))
-                break@stopCereal
-            }
-            2->{
-                val cereal = Cereal(selected,listCereal.get(selected-1))
-                break@stopCereal
-            }
-            3->{
-                val cereal = Cereal(selected,listCereal.get(selected-1))
-                break@stopCereal
-            }
-            4->{
-                val cereal = Cereal(selected,listCereal.get(selected-1))
-                break@stopCereal
-            }
-            0-> println("Regrese pronto")
-            else -> println("Debe seleccionar un numero de las opciones")
-
-        }
-    }while (selected != 0)
-}
-fun addHuevo(){
+fun addAguaToIngredientes(agua: Agua, selected:Int){
     println("Introduce una cantidad")
     val cantidad:Int? = readLine()?.toInt()
-    val huevo = Huevo(cantidad, "Huevo")
-    println("Cantidade de Huevo que se agrego: $cantidad ")
+    agua.cantidad = cantidad
+    agua.descripcion = agua.list.get(selected-1)
+    agua.unidadMedida = "Lts"
+    val ingrediente = Ingrediente(cantidad!!,agua.list.get(selected-1),agua.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${agua.list.get(selected - 1)}  :)")
+}
+fun addLeche(){
+    stopLeche@ do {
+        val leche = Leche(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+
+        if (selected in 1..leche.list.size){
+            addLecheToIngredientes(leche, selected!!)
+            optionToRepiceMaker()
+            break@stopLeche
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addLecheToIngredientes(leche:Leche, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    leche.cantidad = cantidad
+    leche.descripcion = leche.list.get(selected-1)
+    leche.unidadMedida = "Lts"
+    val ingrediente = Ingrediente(cantidad!!,leche.list.get(selected-1),leche.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${leche.list.get(selected - 1)}  :)")
+}
+fun addCarne(){
+    do {
+        val carne = Carne(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..carne.list.size){
+            addCarneToIngredientes(carne, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addCarneToIngredientes(carne:Carne, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    carne.cantidad = cantidad
+    carne.descripcion = carne.list.get(selected-1)
+    carne.unidadMedida = "Kls"
+    val ingrediente = Ingrediente(cantidad!!,carne.list.get(selected-1),carne.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${carne.list.get(selected - 1)}  :)")
+}
+fun addVerdura(){
+    do {
+        val verdura = Verdura(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..verdura.list.size){
+            addVerduraToIngredientes(verdura, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addVerduraToIngredientes(verdura: Verdura, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    verdura.cantidad = cantidad
+    verdura.descripcion = verdura.list.get(selected-1)
+    verdura.unidadMedida = "Uds"
+    val ingrediente = Ingrediente(cantidad!!,verdura.list.get(selected-1),verdura.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${verdura.list.get(selected - 1)}  :)")
+}
+
+fun addFruta(){
+    do {
+        val fruta = Fruta(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..fruta.list.size){
+            addFrutaToIngredientes(fruta, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addFrutaToIngredientes(fruta: Fruta, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    fruta.cantidad = cantidad
+    fruta.descripcion = fruta.list.get(selected-1)
+    fruta.unidadMedida = "Uds"
+    val ingrediente = Ingrediente(cantidad!!,fruta.list.get(selected-1),fruta.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${fruta.list.get(selected - 1)}  :)")
+}
+fun addCereal(){
+    do {
+        val cereal = Cereal(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..cereal.list.size){
+            addCerealToIngredientes(cereal, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addCerealToIngredientes(cereal:Cereal, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    cereal.cantidad = cantidad
+    cereal.descripcion = cereal.list.get(selected-1)
+    cereal.unidadMedida = "Kls"
+    val ingrediente = Ingrediente(cantidad!!,cereal.list.get(selected-1),cereal.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${cereal.list.get(selected - 1)}  :)")
+}
+fun addHuevo(){
+    do {
+        val huevo = Huevo(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..huevo.list.size){
+            addHuevoToIngredientes(huevo, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addHuevoToIngredientes(huevo: Huevo, selected: Int){
+    println("Introduce una cantidad")
+    val cantidad:Int? = readLine()?.toInt()
+    huevo.cantidad = cantidad
+    huevo.descripcion = huevo.list.get(selected-1)
+    huevo.unidadMedida = "Uds"
+    val ingrediente = Ingrediente(cantidad!!,huevo.list.get(selected-1),huevo.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${huevo.list.get(selected - 1)}  :)")
 }
 fun addAceite(){
-    println("Introduce una cantidad en Litros")
+    do {
+        val aceite = Aceite(0,"")
+        println("0. Terminar receta")
+        val selected:Int? = readLine()?.toInt()
+        if (selected in 1..aceite.list.size){
+            addAceiteToIngredientes(aceite, selected!!)
+            optionToRepiceMaker()
+        }else if(selected == 0){
+            println("Regrese pronto")
+        }else{
+            println("Debe seleccionar un numero de las opciones")
+        }
+    }while (selected != 0)
+}
+fun addAceiteToIngredientes(aceite: Aceite, selected: Int){
+    println("Introduce una cantidad")
     val cantidad:Int? = readLine()?.toInt()
-    val aceite = Aceite(cantidad, "Aceite")
-    println("Cantidad de Aceite que se agredo: $cantidad")
+    aceite.cantidad = cantidad
+    aceite.descripcion = aceite.list.get(selected-1)
+    aceite.unidadMedida = "Lts"
+    val ingrediente = Ingrediente(cantidad!!,aceite.list.get(selected-1),aceite.unidadMedida)
+    ingredienteList.add(ingrediente)
+    //recetas.add(Receta(nombreReceta, ingredienteList))//recetas cuando se termina
+    println("Se agrego $cantidad lts ${aceite.list.get(selected - 1)}  :)")
 }
